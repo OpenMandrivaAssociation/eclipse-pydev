@@ -12,7 +12,7 @@ Epoch: 1
 Summary:          Eclipse Python development plug-in
 Name:             eclipse-pydev
 Version:          1.3.8
-Release:          %mkrel 0.1.1
+Release:          %mkrel 0.1.2
 License:          Eclipse Public License
 URL:              http://pydev.sourceforge.net/
 Group:            Development/Java
@@ -151,7 +151,7 @@ ln -sf %{_javadir}/jython.jar \
 popd
 
 %if %{gcj_support}
-aot-compile-rpm
+%{_bindir}/aot-compile-rpm
 %endif
 
 %clean 
@@ -181,106 +181,3 @@ rm -rf ${RPM_BUILD_ROOT}
 %if %{gcj_support}
 %{_libdir}/gcj/%{name}
 %endif
-
-%changelog
-* Fri Aug 24 2007 Ben Konrath <bkonrath@redhat.com> 1:1.3.8-1
-- 1.3.8
-
-* Fri Apr 27 2007 Igor Foox <ifoox@redhat.com> 1:1.3.1-5
-- Add runtime dependancy on the JDT.
-- Reorganize Requires and BuildRequires.
-
-* Mon Apr 02 2007 Andrew Overholt <overholt@redhat.com> 1:1.3.1-4
-- Remove some whitespace, fix lines > 80 characters.
-- Remove unnecessary rm of junit.jar.
-- pushd to a deeper directory to fix long lines.
-- Add missing popd.
-- Typo in buildroot.
-
-* Mon Apr 02 2007 Igor Foox <ifoox@redhat.com> 1:1.3.1-3
-- Remove ExclusiveArch.
-
-* Sun Apr 01 2007 Igor Foox <ifoox@redhat.com> 1:1.3.1-2
-- Add Jython as a BuildRequires and Requires.
-- Fix buildroot.
-- Add dist tag.
-- Remove pkg_summary and eclipse_name macros.
-- Remove eclipse-jdt and eclipse-pde from BR as they are required by PDE.
-- Fix permissions on defattr.
-- Fix long lines.
-- Renumber and comment patches.
-- Update and simplify source drop generation comment.
-
-* Tue Mar 27 2007 Igor Foox <ifoox@redhat.com> 1:1.3.1-1
-- Update to PyDev 1.3.1.
-
-* Mon Mar 26 2007 Igor Foox <ifoox@redhat.com> 1:1.3.0-2
-- Add dependency on jython.
-
-* Sun Mar 25 2007 Igor Foox <ifoox@redhat.com> 1:1.3.0-1
-- Update to version 1.3.0.
-- Update fetch script to include refactoring package.
-- Fixeup changelog epochs.
-- Remove #! lines from .py files.
-
-* Sat Mar 24 2007 Igor Foox <ifoox@redhat.com> 1:1.2.5-2
-- Update to version 1.2.5.
-- Include Jython functionality again.
-- Fix spacing issues.
-- Remove backport to Java 1.4. 
-- Change build method to package-build.
-- Include script to create the tarball.
-
-* Wed Jun 28 2006 Igor Foox <ifoox@redhat.com> 1:1.1.0-1
-- Updated to version 1.1.0 (still backported)
-- Excluded Jython functionality
-- Removed _fc from version
-- Indented
-
-* Thu Feb 09 2006 Igor Foox <ifoox@redhat.com> 1:1.0.6_fc-1
-- Building backported version.
-
-* Thu Feb 09 2006 Andrew Overholt <overholt@redhat.com> 1:0.9.3_fc-14
-- Build against 3.1.2.
-
-* Fri Dec 16 2005 Andrew Overholt <overholt@redhat.com> 1:0.9.3_fc-13
-- Build against gcc 4.1.
-
-* Thu Oct 27 2005 Andrew Overholt <overholt@redhat.com> 1:0.9.3_fc-12
-- Re-build.
-
-* Tue Aug 02 2005 Jeff Pound <jpound@redhat.com> 1:0.9.3_fc-11
-- Add patch to make python 2.4 default (bz#164847).
-
-* Fri Jul 15 2005 Andrew Overholt <overholt@redhat.com> 1:0.9.3_fc-10
-- Use gbenson's new aot-compile-rpm.
-
-* Fri Jul 08 2005 Jeff Pound <jpound@redhat.com> 1:0.9.3_fc-9
-- Fix eclipse build specification to be arch independant.
-- Fix build.properties javacDebugInfo flag (Robin Green bz#161534)
-- Add -g compile option (Robin Green bz#161534)
-
-* Tue Jul 05 2005 Jeff Pound <jpound@redhat.com> 1:0.9.3_fc-8
-- Apply Robin Greens patch to explicitly specify archive format (bz#162517)
-- Fix spec file description.
-
-* Tue Apr 26 2005 Andrew Overholt <overholt@redhat.com> 1:0.9.3_fc-7
-- Re-organize and make use of scripts.
-- Remove old tarball from sources.
-
-* Tue Apr 26 2005 Jeff Pound <jpound@redhat.com> 1:0.9.3_fc-6
-- Swap zip logic for tarball logic.
-- Upgrade to 0.9.3.
-- Remove 3.1 compat patch (included in 0.9.3).
-
-* Fri Mar 4 2005 Phil Muldoon <pmuldoon@redhat.com> 1:0.9.0-4_fc
-- Added x86_64 to ExclusiveArch
-
-* Thu Mar 3 2005 Jeffrey Pound <jpound@redhat.com> 1:0.9.0-3_fc
-- Rewrite for native build.
-- Change gcc4 to gcc.
-- Add python as requirement.
-- Remove -g option for gcj.
-
-* Tue Feb 08 2005 Jeff Pound <jpound@redhat.com> 1:0.9.0-1_fc
-- Initial version
