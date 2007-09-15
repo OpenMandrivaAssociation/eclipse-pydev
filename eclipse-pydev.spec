@@ -22,8 +22,6 @@ Source0:          http://downloads.sourceforge.net/pydev/org.python.pydev.featur
 %if %{gcj_support}
 BuildRequires:    gcc-java >= 4.1.2
 BuildRequires:    java-1.5.0-gcj-devel >= 1.5.0
-Requires(post):   java-1.5.0-gcj >= 1.5.0
-Requires(postun): java-1.5.0-gcj >= 1.5.0
 %else
 BuildRequires:    java-devel >= 1.5.0
 %endif
@@ -40,8 +38,7 @@ BuildRequires:    junit >= 3.8.1
 BuildRequires:    commons-codec >= 1.3
 BuildRequires:    jython >= 2.2
 
-%if %{gcj_support}
-%else
+%if !%{gcj_support}
 BuildArch:        noarch
 %endif
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root
