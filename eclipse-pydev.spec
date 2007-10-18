@@ -155,6 +155,15 @@ install -d -m755 ${RPM_BUILD_ROOT}/%{_datadir}/eclipse
 unzip -q -d $RPM_BUILD_ROOT%{_datadir}/eclipse/.. \
             build/rpmBuild/org.python.pydev.feature.zip
 
+# no xmlrpc3 -> no mylyn on ppc64 due to:
+# https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239123
+%ifnarch ppc64
+# pydev mylyn feature
+unzip -q -d $RPM_BUILD_ROOT%{_datadir}/eclipse/.. \
+            build/rpmBuild/org.python.pydev.mylyn.feature.zip
+%endif
+
+# deal with linked deps
 pushd $RPM_BUILD_ROOT%{_datadir}/eclipse/plugins
 rm -rf org.python.pydev.core_%{version}/commons-codec.jar
 ln -sf %{_javadir}/jakarta-commons-codec.jar \
