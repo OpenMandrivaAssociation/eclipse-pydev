@@ -11,34 +11,41 @@ Epoch: 1
 
 Summary:          Eclipse Python development plug-in
 Name:             eclipse-pydev
-Version:          1.3.8
-Release:          %mkrel 0.1.4
+Version:          1.3.9
+Release:          %mkrel 0.1.1
 License:          Eclipse Public License
 URL:              http://pydev.sourceforge.net/
 Group:            Development/Java
 
-Source0:          http://downloads.sourceforge.net/pydev/org.python.pydev.feature-src-1_3_8.zip
+Source0:          http://downloads.sourceforge.net/pydev/org.python.pydev.feature-src-1_3_9.zip
+Source1:          org.python.pydev.mylyn.feature-fetched-src-pydev_1_3_7.tar.bz2
+Source2:          fetch-pydev-mylyn.sh
 
 %if %{gcj_support}
-BuildRequires:    gcc-java >= 4.1.2
 BuildRequires:    java-1.5.0-gcj-devel >= 1.5.0
 %else
 BuildRequires:    java-devel >= 1.5.0
 %endif
 
 Requires:         eclipse-jdt
-Requires:         eclipse-cvs-client
 Requires:         python
 Requires:         commons-codec >= 1.3
 Requires:         junit >= 3.8.1
 Requires:         jython >= 2.2
 BuildRequires:    eclipse-pde
+# no xmlrpc3 -> no mylyn on ppc64 due to:
+# https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239123
+%ifnarch ppc64
+BuildRequires:    eclipse-mylyn
+BuildRequires:    eclipse-mylyn-ide
+%endif
 BuildRequires:    jpackage-utils >= 0:1.5
 BuildRequires:    junit >= 3.8.1
 BuildRequires:    commons-codec >= 1.3
 BuildRequires:    jython >= 2.2
 
-%if !%{gcj_support}
+%if %{gcj_support}
+%else
 BuildArch:        noarch
 %endif
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root
@@ -49,6 +56,8 @@ Python development.
 
 %prep
 %setup -q -c 
+
+tar jxf %{SOURCE1}
 
 # remove pre-generated build files
 find . -name build.xml | xargs rm 
@@ -95,17 +104,9 @@ rm -f plugins/org.python.pydev.refactoring/tests/lib/xstream-1.2.1.jar
 
 rm -f plugins/org.python.pydev.refactoring/contrib/ch/hsr/ukistler/astgraph/jgraph.jar
 
-# Remove #!'s from the .py files enclosed in org.python.pydev.jython
-for f in `find plugins -name '*.py'` ; do 
-    if [ -f $f ]; then
-        sed --in-place "s/^#!.*$//" $f
-    fi
-done 
-
-
 %build
 # Copy the SDK for build
-/bin/sh -x %{_datadir}/eclipse/buildscripts/copy-platform SDK %{_datadir}/eclipse
+/bin/sh -x %{_datadir}/eclipse/buildscripts/copy-platform SDK %{_datadir}/eclipse mylyn
 SDK=$(cd SDK > /dev/null && pwd)
 
 # Eclipse may try to write to the home directory.
@@ -127,9 +128,30 @@ homedir=$(cd home > /dev/null && pwd)
      -f %{_datadir}/eclipse/plugins/org.eclipse.pde.build/scripts/build.xml \
      -vmargs -Duser.home=$homedir
 
+# no xmlrpc3 -> no mylyn on ppc64 due to:
+# https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239123
+%ifnarch ppc64
+# build the pydev mylyn feature
+%{java} -cp $SDK/startup.jar                              \
+     -Dosgi.sharedConfiguration.area=%{_libdir}/eclipse/configuration  \
+     org.eclipse.core.launcher.Main                    \
+     -application org.eclipse.ant.core.antRunner       \
+     -Dtype=feature                                    \
+     -Did=org.python.pydev.mylyn.feature               \
+     -DbaseLocation=$SDK                               \
+     -DsourceDirectory=$(pwd)                          \
+     -DjavacSource=1.5  -DjavacTarget=1.5              \
+     -DbuildDirectory=$(pwd)/build                     \
+     -Dbuilder=%{_datadir}/eclipse/plugins/org.eclipse.pde.build/templates/package-build \
+     -f %{_datadir}/eclipse/plugins/org.eclipse.pde.build/scripts/build.xml \
+     -vmargs -Duser.home=$homedir
+%endif
+
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d -m755 ${RPM_BUILD_ROOT}/%{_datadir}/eclipse
+
+# pydev main feature
 unzip -q -d $RPM_BUILD_ROOT%{_datadir}/eclipse/.. \
             build/rpmBuild/org.python.pydev.feature.zip
 
@@ -174,6 +196,11 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_datadir}/eclipse/plugins/org.python.pydev.templates*
 %{_datadir}/eclipse/plugins/org.python.pydev.jython*
 %{_datadir}/eclipse/plugins/org.python.pydev.refactoring*
+# no xmlrpc3 -> no mylyn on ppc64 due to:
+# https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239123
+%ifnarch ppc64
+%{_datadir}/eclipse/plugins/org.python.pydev.mylyn*
+%endif
 
 %if %{gcj_support}
 %{_libdir}/gcj/%{name}
