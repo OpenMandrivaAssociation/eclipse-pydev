@@ -32,6 +32,7 @@ Requires:         python
 Requires:         commons-codec >= 1.3
 Requires:         junit >= 3.8.1
 Requires:         jython >= 2.2
+BuildRequires:    zip
 BuildRequires:    eclipse-pde
 # no xmlrpc3 -> no mylyn on ppc64 due to:
 # https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239123
