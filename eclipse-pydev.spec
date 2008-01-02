@@ -49,6 +49,7 @@ BuildRequires:    jython >= 2.2
 %else
 BuildArch:        noarch
 %endif
+BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root
 
 %description
 The eclipse-pydev package contains Eclipse plugins for
