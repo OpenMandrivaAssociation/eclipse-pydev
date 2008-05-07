@@ -11,13 +11,13 @@ Epoch: 1
 
 Summary:          Eclipse Python development plug-in
 Name:             eclipse-pydev
-Version:          1.3.15
+Version:          1.3.16
 Release:          %mkrel 0.0.1
 License:          Eclipse Public License
 URL:              http://pydev.sourceforge.net/
 Group:            Development/Java
 
-Source0:          http://downloads.sourceforge.net/pydev/org.python.pydev.feature-src-1_3_15.zip
+Source0:          http://downloads.sourceforge.net/pydev/org.python.pydev.feature-src-1_3_16.zip
 Source1:          org.python.pydev.mylyn.feature-fetched-src-pydev_1_3_7.tar.bz2
 Source2:          fetch-pydev-mylyn.sh
 
@@ -179,9 +179,7 @@ ln -sf %{_javadir}/jython.jar \
        org.python.pydev.jython_%{version}/jython.jar
 popd
 
-%if %{gcj_support}
-%{_bindir}/aot-compile-rpm
-%endif
+%{gcj_compile}
 
 %clean 
 rm -rf ${RPM_BUILD_ROOT}
@@ -212,6 +210,5 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_datadir}/eclipse/plugins/org.python.pydev.mylyn*
 %endif
 
-%if %{gcj_support}
-%{_libdir}/gcj/%{name}
-%endif
+%{gcj_files}
+
