@@ -12,10 +12,10 @@ Epoch: 1
 Summary:          Eclipse Python development plug-in
 Name:             eclipse-pydev
 Version:          1.3.17
-Release:          %mkrel 0.0.1
+Release:          %mkrel 0.0.2
 License:          Eclipse Public License
 URL:              http://pydev.sourceforge.net/
-Group:            Development/Java
+Group:            Development/Python
 
 Source0:          http://downloads.sourceforge.net/pydev/org.python.pydev.feature-src-1_3_17.zip
 Source1:          org.python.pydev.mylyn.feature-fetched-src-pydev_1_3_7.tar.bz2
