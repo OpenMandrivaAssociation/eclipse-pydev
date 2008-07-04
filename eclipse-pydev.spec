@@ -1,6 +1,7 @@
 Epoch: 1
 
 %define gcj_support         0
+%define eclipse_base     %{_datadir}/eclipse
 
 # All arches line up except i386 -> x86
 %ifarch %{ix86}
@@ -12,7 +13,7 @@ Epoch: 1
 Summary:          Eclipse Python development plug-in
 Name:             eclipse-pydev
 Version:          1.3.18
-Release:          %mkrel 0.0.1
+Release:          %mkrel 0.0.2
 License:          Eclipse Public License
 URL:              http://pydev.sourceforge.net/
 Group:            Development/Python
@@ -30,10 +31,18 @@ BuildRequires:    java-devel >= 1.5.0
 Requires:         eclipse-jdt
 Requires:         python
 Requires:         commons-codec >= 1.3
+Requires:	  jakarta-commons-logging
+Requires:         ws-commons-util
 Requires:         junit >= 3.8.1
 Requires:         jython >= 2.2
+Requires:         xmlrpc3-common
+Requires:         xmlrpc3-client
+Requires:         xmlrpc3-server
 BuildRequires:    zip
 BuildRequires:    eclipse-pde
+BuildRequires:    xmlrpc3-common
+BuildRequires:    xmlrpc3-client
+BuildRequires:    xmlrpc3-server
 # no xmlrpc3 -> no mylyn on ppc64 due to:
 # https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239123
 %ifnarch ppc64
@@ -43,6 +52,8 @@ BuildRequires:    eclipse-mylyn-ide
 BuildRequires:    java-rpmbuild >= 0:1.5
 BuildRequires:    junit >= 3.8.1
 BuildRequires:    commons-codec >= 1.3
+BuildRequires:	  jakarta-commons-logging
+BuildRequires:    ws-commons-util
 BuildRequires:    jython >= 2.2
 
 %if %{gcj_support}
@@ -87,6 +98,26 @@ ln -sf %{_javadir}/junit.jar \
 rm -f plugins/org.python.pydev.jython/jython.jar
 ln -sf %{_javadir}/jython.jar \
        plugins/org.python.pydev.jython/jython.jar
+       
+rm -f plugins/org.python.pydev.debug/commons-logging-1.1.jar
+ln -sf %{_javadir}/commons-logging.jar \
+       plugins/org.python.pydev.debug/commons-logging-1.1.jar
+       
+rm -f plugins/org.python.pydev.debug/ws-commons-util-1.0.2.jar
+ln -sf %{_javadir}/ws-commons-util.jar \
+       plugins/org.python.pydev.debug/ws-commons-util-1.0.2.jar
+       
+rm -f plugins/org.python.pydev.debug/xmlrpc-client-3.1.jar
+ln -sf %{_javadir}/xmlrpc3-client.jar \
+       plugins/org.python.pydev.debug/xmlrpc-client-3.1.jar
+       
+rm -f plugins/org.python.pydev.debug/xmlrpc-common-3.1.jar
+ln -sf %{_javadir}/xmlrpc3-common.jar \
+       plugins/org.python.pydev.debug/xmlrpc-common-3.1.jar
+       
+rm -f plugins/org.python.pydev.debug/xmlrpc-server-3.1.jar
+ln -sf %{_javadir}/xmlrpc3-server.jar \
+       plugins/org.python.pydev.debug/xmlrpc-server-3.1.jar
 
 rm -f plugins/org.python.pydev.refactoring/tests/lib/JFlex.jar
 # enable when tests are used
@@ -106,48 +137,13 @@ rm -f plugins/org.python.pydev.refactoring/tests/lib/xstream-1.2.1.jar
 rm -f plugins/org.python.pydev.refactoring/contrib/ch/hsr/ukistler/astgraph/jgraph.jar
 
 %build
-# Copy the SDK for build
-/bin/sh -x %{_datadir}/eclipse/buildscripts/copy-platform SDK %{_datadir}/eclipse mylyn
-SDK=$(cd SDK > /dev/null && pwd)
-
-# Eclipse may try to write to the home directory.
-mkdir home
-homedir=$(cd home > /dev/null && pwd)
-
-# build the main pydev feature
-%{java} -cp $SDK/startup.jar                              \
-     -Dosgi.sharedConfiguration.area=%{_libdir}/eclipse/configuration  \
-     org.eclipse.core.launcher.Main                    \
-     -application org.eclipse.ant.core.antRunner       \
-     -Dtype=feature                                    \
-     -Did=org.python.pydev.feature                     \
-     -DbaseLocation=$SDK                               \
-     -DsourceDirectory=$(pwd)                          \
-     -DjavacSource=1.5  -DjavacTarget=1.5              \
-     -DbuildDirectory=$(pwd)/build                     \
-     -Dbuilder=%{_datadir}/eclipse/plugins/org.eclipse.pde.build/templates/package-build \
-     -f %{_datadir}/eclipse/plugins/org.eclipse.pde.build/scripts/build.xml \
-     -vmargs -Duser.home=$homedir
-
-# no xmlrpc3 -> no mylyn on ppc64 due to:
-# https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239123
-%ifnarch ppc64
-# build the pydev mylyn feature
-%{java} -cp $SDK/startup.jar                              \
-     -Dosgi.sharedConfiguration.area=%{_libdir}/eclipse/configuration  \
-     org.eclipse.core.launcher.Main                    \
-     -application org.eclipse.ant.core.antRunner       \
-     -Dtype=feature                                    \
-     -Did=org.python.pydev.mylyn.feature               \
-     -DbaseLocation=$SDK                               \
-     -DsourceDirectory=$(pwd)                          \
-     -DjavacSource=1.5  -DjavacTarget=1.5              \
-     -DbuildDirectory=$(pwd)/build                     \
-     -Dbuilder=%{_datadir}/eclipse/plugins/org.eclipse.pde.build/templates/package-build \
-     -f %{_datadir}/eclipse/plugins/org.eclipse.pde.build/scripts/build.xml \
-     -vmargs -Duser.home=$homedir
-%endif
-
+%{eclipse_base}/buildscripts/pdebuild -d mylyn -f org.python.pydev.feature \
+  -a "-DjavacTarget=1.5 -DjavacSource=1.5"
+     
+  
+%{eclipse_base}/buildscripts/pdebuild -d mylyn -f org.python.pydev.mylyn.feature \
+  -a "-DjavacTarget=1.5 -DjavacSource=1.5"
+     
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d -m755 ${RPM_BUILD_ROOT}/%{_datadir}/eclipse
@@ -177,6 +173,26 @@ ln -sf %{_javadir}/junit.jar \
 rm -rf org.python.pydev.jython_%{version}/jython.jar
 ln -sf %{_javadir}/jython.jar \
        org.python.pydev.jython_%{version}/jython.jar
+       
+rm -f org.python.pydev.debug_%{version}/commons-logging-1.1.jar
+ln -sf %{_javadir}/commons-logging.jar \
+       org.python.pydev.debug_%{version}/commons-logging-1.1.jar
+       
+rm -f org.python.pydev.debug_%{version}/ws-commons-util-1.0.2.jar
+ln -sf %{_javadir}/ws-commons-util.jar \
+       org.python.pydev.debug_%{version}/ws-commons-util-1.0.2.jar
+       
+rm -f org.python.pydev.debug_%{version}/xmlrpc-client-3.1.jar
+ln -sf %{_javadir}/xmlrpc3-client.jar \
+       org.python.pydev.debug_%{version}/xmlrpc-client-3.1.jar
+       
+rm -f org.python.pydev.debug_%{version}/xmlrpc-common-3.1.jar
+ln -sf %{_javadir}/xmlrpc3-common.jar \
+       org.python.pydev.debug_%{version}/xmlrpc-common-3.1.jar
+       
+rm -f org.python.pydev.debug_%{version}/xmlrpc-server-3.1.jar
+ln -sf %{_javadir}/xmlrpc3-server.jar \
+       org.python.pydev.debug_%{version}/xmlrpc-server-3.1.jar
 popd
 
 %{gcj_compile}
