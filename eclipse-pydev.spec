@@ -1,19 +1,12 @@
 Epoch: 1
 
+%define eclipse_base     %{_libdir}/eclipse
 %define gcj_support         0
-%define eclipse_base     %{_datadir}/eclipse
-
-# All arches line up except i386 -> x86
-%ifarch %{ix86}
-%define eclipse_arch    x86
-%else
-%define eclipse_arch   %{_arch}
-%endif
 
 Summary:          Eclipse Python development plug-in
 Name:             eclipse-pydev
 Version:          1.3.18
-Release:          %mkrel 0.0.2
+Release:          %mkrel 0.1.1
 License:          Eclipse Public License
 URL:              http://pydev.sourceforge.net/
 Group:            Development/Python
@@ -21,6 +14,11 @@ Group:            Development/Python
 Source0:          http://downloads.sourceforge.net/pydev/org.python.pydev.feature-src-1_3_18.zip
 Source1:          org.python.pydev.mylyn.feature-fetched-src-pydev_1_3_7.tar.bz2
 Source2:          fetch-pydev-mylyn.sh
+
+# Back-port from HEAD
+# http://pydev.cvs.sourceforge.net/pydev/org.python.pydev/src/org/python/copiedfromeclipsesrc/CopiedWorkbenchLabelProvider.java?revision=1.3&view=markup
+Patch0:           %{name}-%{version}-compileerrors.patch
+
 
 %if %{gcj_support}
 BuildRequires:    java-1.5.0-gcj-devel >= 1.5.0
@@ -31,18 +29,10 @@ BuildRequires:    java-devel >= 1.5.0
 Requires:         eclipse-jdt
 Requires:         python
 Requires:         commons-codec >= 1.3
-Requires:	  jakarta-commons-logging
-Requires:         ws-commons-util
 Requires:         junit >= 3.8.1
 Requires:         jython >= 2.2
-Requires:         xmlrpc3-common
-Requires:         xmlrpc3-client
-Requires:         xmlrpc3-server
 BuildRequires:    zip
 BuildRequires:    eclipse-pde
-BuildRequires:    xmlrpc3-common
-BuildRequires:    xmlrpc3-client
-BuildRequires:    xmlrpc3-server
 # no xmlrpc3 -> no mylyn on ppc64 due to:
 # https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239123
 %ifnarch ppc64
@@ -52,8 +42,6 @@ BuildRequires:    eclipse-mylyn-ide
 BuildRequires:    java-rpmbuild >= 0:1.5
 BuildRequires:    junit >= 3.8.1
 BuildRequires:    commons-codec >= 1.3
-BuildRequires:	  jakarta-commons-logging
-BuildRequires:    ws-commons-util
 BuildRequires:    jython >= 2.2
 
 %if %{gcj_support}
@@ -68,6 +56,7 @@ Python development.
 
 %prep
 %setup -q -c 
+%patch0
 
 tar jxf %{SOURCE1}
 
@@ -98,26 +87,6 @@ ln -sf %{_javadir}/junit.jar \
 rm -f plugins/org.python.pydev.jython/jython.jar
 ln -sf %{_javadir}/jython.jar \
        plugins/org.python.pydev.jython/jython.jar
-       
-rm -f plugins/org.python.pydev.debug/commons-logging-1.1.jar
-ln -sf %{_javadir}/commons-logging.jar \
-       plugins/org.python.pydev.debug/commons-logging-1.1.jar
-       
-rm -f plugins/org.python.pydev.debug/ws-commons-util-1.0.2.jar
-ln -sf %{_javadir}/ws-commons-util.jar \
-       plugins/org.python.pydev.debug/ws-commons-util-1.0.2.jar
-       
-rm -f plugins/org.python.pydev.debug/xmlrpc-client-3.1.jar
-ln -sf %{_javadir}/xmlrpc3-client.jar \
-       plugins/org.python.pydev.debug/xmlrpc-client-3.1.jar
-       
-rm -f plugins/org.python.pydev.debug/xmlrpc-common-3.1.jar
-ln -sf %{_javadir}/xmlrpc3-common.jar \
-       plugins/org.python.pydev.debug/xmlrpc-common-3.1.jar
-       
-rm -f plugins/org.python.pydev.debug/xmlrpc-server-3.1.jar
-ln -sf %{_javadir}/xmlrpc3-server.jar \
-       plugins/org.python.pydev.debug/xmlrpc-server-3.1.jar
 
 rm -f plugins/org.python.pydev.refactoring/tests/lib/JFlex.jar
 # enable when tests are used
@@ -137,62 +106,49 @@ rm -f plugins/org.python.pydev.refactoring/tests/lib/xstream-1.2.1.jar
 rm -f plugins/org.python.pydev.refactoring/contrib/ch/hsr/ukistler/astgraph/jgraph.jar
 
 %build
-%{eclipse_base}/buildscripts/pdebuild -d mylyn -f org.python.pydev.feature \
-  -a "-DjavacTarget=1.5 -DjavacSource=1.5"
-     
-  
-%{eclipse_base}/buildscripts/pdebuild -d mylyn -f org.python.pydev.mylyn.feature \
-  -a "-DjavacTarget=1.5 -DjavacSource=1.5"
+%{eclipse_base}/buildscripts/pdebuild \
+  -a "-DjavacSource=1.5  -DjavacTarget=1.5" \
+  -f org.python.pydev.feature
+
+# no xmlrpc3 -> no mylyn on ppc64 due to:
+# https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239123
+%ifnarch ppc64
+%{eclipse_base}/buildscripts/pdebuild \
+  -a "-DjavacSource=1.5  -DjavacTarget=1.5" \
+  -d mylyn \
+  -f org.python.pydev.mylyn.feature
+%endif
+
      
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d -m755 ${RPM_BUILD_ROOT}/%{_datadir}/eclipse
+installDir=${RPM_BUILD_ROOT}/%{_datadir}/eclipse/dropins/pydev
+install -d -m755 $installDir
+install -d -m755 ${installDir}-mylyn
 
 # pydev main feature
-unzip -q -d $RPM_BUILD_ROOT%{_datadir}/eclipse/.. \
-            build/rpmBuild/org.python.pydev.feature.zip
+unzip -q -d $installDir build/rpmBuild/org.python.pydev.feature.zip
 
 # no xmlrpc3 -> no mylyn on ppc64 due to:
 # https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239123
 %ifnarch ppc64
 # pydev mylyn feature
-unzip -q -d $RPM_BUILD_ROOT%{_datadir}/eclipse/.. \
-            build/rpmBuild/org.python.pydev.mylyn.feature.zip
+unzip -q -d ${installDir}-mylyn build/rpmBuild/org.python.pydev.mylyn.feature.zip
 %endif
 
 # deal with linked deps
-pushd $RPM_BUILD_ROOT%{_datadir}/eclipse/plugins
+pushd $installDir/eclipse/plugins
 rm -rf org.python.pydev.core_%{version}/commons-codec.jar
-ln -sf %{_javadir}/jakarta-commons-codec.jar \
+ln -sf %{_datadir}/java/jakarta-commons-codec.jar \
        org.python.pydev.core_%{version}/commons-codec.jar
 
 mkdir org.python.pydev.core_%{version}/lib
-ln -sf %{_javadir}/junit.jar \
+ln -sf %{_datadir}/java/junit.jar \
        org.python.pydev.core_%{version}/lib/junit.jar
 
 rm -rf org.python.pydev.jython_%{version}/jython.jar
-ln -sf %{_javadir}/jython.jar \
+ln -sf %{_datadir}/java/jython.jar \
        org.python.pydev.jython_%{version}/jython.jar
-       
-rm -f org.python.pydev.debug_%{version}/commons-logging-1.1.jar
-ln -sf %{_javadir}/commons-logging.jar \
-       org.python.pydev.debug_%{version}/commons-logging-1.1.jar
-       
-rm -f org.python.pydev.debug_%{version}/ws-commons-util-1.0.2.jar
-ln -sf %{_javadir}/ws-commons-util.jar \
-       org.python.pydev.debug_%{version}/ws-commons-util-1.0.2.jar
-       
-rm -f org.python.pydev.debug_%{version}/xmlrpc-client-3.1.jar
-ln -sf %{_javadir}/xmlrpc3-client.jar \
-       org.python.pydev.debug_%{version}/xmlrpc-client-3.1.jar
-       
-rm -f org.python.pydev.debug_%{version}/xmlrpc-common-3.1.jar
-ln -sf %{_javadir}/xmlrpc3-common.jar \
-       org.python.pydev.debug_%{version}/xmlrpc-common-3.1.jar
-       
-rm -f org.python.pydev.debug_%{version}/xmlrpc-server-3.1.jar
-ln -sf %{_javadir}/xmlrpc3-server.jar \
-       org.python.pydev.debug_%{version}/xmlrpc-server-3.1.jar
 popd
 
 %{gcj_compile}
@@ -210,20 +166,12 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files
 %defattr(-,root,root,-)
-%{_datadir}/eclipse/features/org.python.pydev*
-%{_datadir}/eclipse/plugins/org.python.pydev_*
-%{_datadir}/eclipse/plugins/org.python.pydev.ast*
-%{_datadir}/eclipse/plugins/org.python.pydev.core*
-%{_datadir}/eclipse/plugins/org.python.pydev.debug*
-%{_datadir}/eclipse/plugins/org.python.pydev.help*
-%{_datadir}/eclipse/plugins/org.python.pydev.parser*
-%{_datadir}/eclipse/plugins/org.python.pydev.templates*
-%{_datadir}/eclipse/plugins/org.python.pydev.jython*
-%{_datadir}/eclipse/plugins/org.python.pydev.refactoring*
+%{_datadir}/eclipse/dropins/pydev
 # no xmlrpc3 -> no mylyn on ppc64 due to:
 # https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239123
 %ifnarch ppc64
-%{_datadir}/eclipse/plugins/org.python.pydev.mylyn*
-%endif
+%{_datadir}/eclipse/dropins/pydev-mylyn
+%endif 
 
 %{gcj_files}
+
