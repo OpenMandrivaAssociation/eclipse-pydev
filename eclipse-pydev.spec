@@ -5,7 +5,7 @@ Epoch: 1
 
 Summary:          Eclipse Python development plug-in
 Name:             eclipse-pydev
-Version:          1.3.20
+Version:          1.3.24
 Release:          %mkrel 0.0.1
 License:          Eclipse Public License
 URL:              http://pydev.sourceforge.net/
@@ -55,13 +55,13 @@ The eclipse-pydev package contains Eclipse plugins for
 Python development.
 
 %prep
-%setup -q -c 
+%setup -q -c
 #patch0
 
 tar jxf %{SOURCE1}
 
 # remove pre-generated build files
-find . -name build.xml | xargs rm 
+find . -name build.xml | xargs rm
 
 # remove pre-built jars
 rm -f plugins/org.python.pydev.core/core.jar
@@ -73,7 +73,7 @@ rm -f plugins/org.python.pydev.jython/pydev-jython.jar
 rm -f plugins/org.python.pydev.refactoring/refactoring.jar
 
 # remove included retroweaver jars as it isn't being used
-find . -name retroweaver-rt.jar | xargs rm 
+find . -name retroweaver-rt.jar | xargs rm
 
 # link to system jars
 rm -f plugins/org.python.pydev.core/commons-codec.jar
@@ -119,7 +119,7 @@ rm -f plugins/org.python.pydev.refactoring/contrib/ch/hsr/ukistler/astgraph/jgra
   -f org.python.pydev.mylyn.feature
 %endif
 
-     
+
 %install
 rm -rf $RPM_BUILD_ROOT
 installDir=${RPM_BUILD_ROOT}/%{_datadir}/eclipse/dropins/pydev
@@ -138,22 +138,30 @@ unzip -q -d ${installDir}-mylyn build/rpmBuild/org.python.pydev.mylyn.feature.zi
 
 # deal with linked deps
 pushd $installDir/eclipse/plugins
-rm -rf org.python.pydev.core_%{version}/commons-codec.jar
-ln -sf %{_datadir}/java/jakarta-commons-codec.jar \
-       org.python.pydev.core_%{version}/commons-codec.jar
+#rm -rf org.python.pydev.core_%{version}/commons-codec.jar
+#ln -sf %{_datadir}/java/jakarta-commons-codec.jar \
+#       org.python.pydev.core_%{version}/commons-codec.jar
 
-mkdir org.python.pydev.core_%{version}/lib
-ln -sf %{_datadir}/java/junit.jar \
-       org.python.pydev.core_%{version}/lib/junit.jar
-
-rm -rf org.python.pydev.jython_%{version}/jython.jar
-ln -sf %{_datadir}/java/jython.jar \
-       org.python.pydev.jython_%{version}/jython.jar
+#mkdir org.python.pydev.core_%{version}/lib
+#ln -sf %{_datadir}/java/junit.jar \
+#       org.python.pydev.core_%{version}/lib/junit.jar
+#
+#rm -rf org.python.pydev.jython_%{version}/jython.jar
+#ln -sf %{_datadir}/java/jython.jar \
+#       org.python.pydev.jython_%{version}/jython.jar
 popd
+
+# rename cgi.py's shebang from /usr/local/bin/python to /usr/bin/env python
+#sed -i 's/\/usr\/local\/bin\/python/\/usr\/bin\/env python/' ${RPM_BUILD_ROOT}%{_datadir}/eclipse/dropins/pydev/eclipse/plugins/org.python.pydev.jython_%{version}/Lib/cgi.py
+# convert .py$ files from mode 0644 to mode 0755
+chmod 0755 `find ${RPM_BUILD_ROOT} -name '*\.py' -perm 0644 | xargs`
+
+# convert '\r\n' end-of-lines to *unix-like '\n'
+# sed -i 's/\r//' `find ${RPM_BUILD_ROOT} -name '*\.py' | xargs`
 
 %{gcj_compile}
 
-%clean 
+%clean
 rm -rf ${RPM_BUILD_ROOT}
 
 %if %{gcj_support}
@@ -171,7 +179,7 @@ rm -rf ${RPM_BUILD_ROOT}
 # https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239123
 %ifnarch ppc64
 %{_datadir}/eclipse/dropins/pydev-mylyn
-%endif 
+%endif
 
 %{gcj_files}
 
