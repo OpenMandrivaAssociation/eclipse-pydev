@@ -1,17 +1,21 @@
 Epoch: 1
 
 %define eclipse_base     %{_libdir}/eclipse
+%define install_loc      %{_libdir}/eclipse/dropins
 %define gcj_support         0
+
+%define major     1
+%define minor     4
+%define maint     0
 
 Summary:          Eclipse Python development plug-in
 Name:             eclipse-pydev
-Version:          1.3.24
+Version:          %{major}.%{minor}.%{maint}
 Release:          %mkrel 0.0.1
 License:          Eclipse Public License
 URL:              http://pydev.sourceforge.net/
 Group:            Development/Python
-
-Source0:          http://downloads.sourceforge.net/pydev/org.python.pydev.feature-src-1_3_20.zip
+Source0:          http://downloads.sourceforge.net/pydev/org.python.pydev.feature-src-%{major}_%{minor}_%{maint}.zip
 Source1:          org.python.pydev.mylyn.feature-fetched-src-pydev_1_3_7.tar.bz2
 Source2:          fetch-pydev-mylyn.sh
 
@@ -31,6 +35,16 @@ Requires:         python
 Requires:         commons-codec >= 1.3
 Requires:         junit >= 3.8.1
 Requires:         jython >= 2.2
+Requires:         jakarta-commons-codec >= 1.3
+Requires:         jakarta-commons-logging
+Requires:         xmlrpc3-common
+Requires:         xmlrpc3-client
+Requires:         xmlrpc3-server
+Requires:         junit >= 3.8.1
+Requires:         jython >= 2.2
+%ifarch %{ix86}
+Requires:         python-psyco
+%endif
 BuildRequires:    zip
 BuildRequires:    eclipse-pde
 # no xmlrpc3 -> no mylyn on ppc64 due to:
@@ -39,24 +53,35 @@ BuildRequires:    eclipse-pde
 BuildRequires:    eclipse-mylyn
 BuildRequires:    eclipse-mylyn-ide
 %endif
-BuildRequires:    java-rpmbuild >= 0:1.5
-BuildRequires:    junit >= 3.8.1
 BuildRequires:    commons-codec >= 1.3
+BuildRequires:    eclipse-pde
+BuildRequires:    eclipse-mylyn
+BuildRequires:    jpackage-utils >= 0:1.5
+BuildRequires:    junit >= 3.8.1
+BuildRequires:    jakarta-commons-codec >= 1.3
+BuildRequires:    jakarta-commons-logging
+BuildRequires:    ws-commons-util
+BuildRequires:    xmlrpc3-common
+BuildRequires:    xmlrpc3-client
+BuildRequires:    xmlrpc3-server
 BuildRequires:    jython >= 2.2
-
-%if %{gcj_support}
-%else
-BuildArch:        noarch
-%endif
 BuildRoot:        %{_tmppath}/%{name}-%{version}-%{release}-root
 
 %description
 The eclipse-pydev package contains Eclipse plugins for
 Python development.
 
+%package  mylyn
+Summary:  Pydev Mylyn Focused UI
+Requires: eclipse-mylyn
+Requires: %{name} = %{epoch}:%{version}-%{release}
+Group: Development/Tools
+
+%description mylyn
+Mylyn Task-Focused UI extensions for Pydev.
+
 %prep
 %setup -q -c
-#patch0
 
 tar jxf %{SOURCE1}
 
@@ -88,19 +113,40 @@ rm -f plugins/org.python.pydev.jython/jython.jar
 ln -sf %{_javadir}/jython.jar \
        plugins/org.python.pydev.jython/jython.jar
 
+rm -f plugins/org.python.pydev.debug/commons-logging-1.1.jar
+ln -sf %{_javadir}/jakarta-commons-logging.jar \
+       plugins/org.python.pydev.debug/commons-logging-1.1.jar
+
+rm -f plugins/org.python.pydev.debug/ws-commons-util-1.0.2.jar
+ln -sf %{_javadir}/ws-commons-util.jar \
+       plugins/org.python.pydev.debug/ws-commons-util-1.0.2.jar
+
+rm -f plugins/org.python.pydev.debug/xmlrpc-client-3.1.jar
+ln -sf %{_javadir}/xmlrpc3-client.jar \
+       plugins/org.python.pydev.debug/xmlrpc-client-3.1.jar
+
+rm -f plugins/org.python.pydev.debug/xmlrpc-common-3.1.jar
+ln -sf %{_javadir}/xmlrpc3-common.jar \
+       plugins/org.python.pydev.debug/xmlrpc-common-3.1.jar
+
+rm -f plugins/org.python.pydev.debug/xmlrpc-server-3.1.jar
+ln -sf %{_javadir}/xmlrpc3-server.jar \
+       plugins/org.python.pydev.debug/xmlrpc-server-3.1.jar
+
 rm -f plugins/org.python.pydev.refactoring/tests/lib/JFlex.jar
+
 # enable when tests are used
-#ln -sf %{_javadir}/jflex.jar \
+#ln -sf %{_datadir}/java/jflex.jar \
 #       plugins/org.python.pydev.refactoring/tests/lib/JFlex.jar
 
 rm -f plugins/org.python.pydev.refactoring/tests/lib/xpp3_min-1.1.3.4.O.jar
 # enable when tests are used
-#ln -sf %{_javadir}/xpp3-minimal.jar \
+#ln -sf %{_datadir}/java/xpp3-minimal.jar \
 #       plugins/org.python.pydev.refactoring/tests/lib/xpp3_min-1.1.3.4.O.jar
 
 rm -f plugins/org.python.pydev.refactoring/tests/lib/xstream-1.2.1.jar
 # enable when tests are used
-#ln -sf %{_javadir}/xstream.jar \
+#ln -sf %{_datadir}/java/xstream.jar \
 #       plugins/org.python.pydev.refactoring/tests/lib/xstream-1.2.1.jar
 
 rm -f plugins/org.python.pydev.refactoring/contrib/ch/hsr/ukistler/astgraph/jgraph.jar
@@ -109,6 +155,11 @@ rm -f plugins/org.python.pydev.refactoring/contrib/ch/hsr/ukistler/astgraph/jgra
 %{eclipse_base}/buildscripts/pdebuild \
   -a "-DjavacSource=1.5  -DjavacTarget=1.5" \
   -f org.python.pydev.feature
+
+%{eclipse_base}/buildscripts/pdebuild \
+  -a "-DjavacSource=1.5  -DjavacTarget=1.5" \
+  -d mylyn \
+  -f org.python.pydev.mylyn.feature
 
 # no xmlrpc3 -> no mylyn on ppc64 due to:
 # https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239123
@@ -119,10 +170,9 @@ rm -f plugins/org.python.pydev.refactoring/contrib/ch/hsr/ukistler/astgraph/jgra
   -f org.python.pydev.mylyn.feature
 %endif
 
-
 %install
 rm -rf $RPM_BUILD_ROOT
-installDir=${RPM_BUILD_ROOT}/%{_datadir}/eclipse/dropins/pydev
+installDir=${RPM_BUILD_ROOT}/%{install_loc}/pydev
 install -d -m755 $installDir
 install -d -m755 ${installDir}-mylyn
 
@@ -138,21 +188,41 @@ unzip -q -d ${installDir}-mylyn build/rpmBuild/org.python.pydev.mylyn.feature.zi
 
 # deal with linked deps
 pushd $installDir/eclipse/plugins
-#rm -rf org.python.pydev.core_%{version}/commons-codec.jar
-#ln -sf %{_datadir}/java/jakarta-commons-codec.jar \
-#       org.python.pydev.core_%{version}/commons-codec.jar
+rm -rf org.python.pydev.core_%{version}/commons-codec.jar
+ln -sf %{_javadir}/jakarta-commons-codec.jar \
+       org.python.pydev.core_%{version}/commons-codec.jar
 
-#mkdir org.python.pydev.core_%{version}/lib
-#ln -sf %{_datadir}/java/junit.jar \
-#       org.python.pydev.core_%{version}/lib/junit.jar
-#
-#rm -rf org.python.pydev.jython_%{version}/jython.jar
-#ln -sf %{_datadir}/java/jython.jar \
-#       org.python.pydev.jython_%{version}/jython.jar
+mkdir org.python.pydev.core_%{version}/lib
+ln -sf %{_javadir}/junit.jar \
+       org.python.pydev.core_%{version}/lib/junit.jar
+
+rm -rf org.python.pydev.debug_%{version}/commons-logging-1.1.jar
+ln -sf %{_javadir}/jakarta-commons-logging.jar \
+       org.python.pydev.debug_%{version}/commons-logging-1.1.jar
+
+rm -rf org.python.pydev.debug_%{version}/ws-commons-util-1.0.2.jar
+ln -sf %{_javadir}/ws-commons-util.jar \
+       org.python.pydev.debug_%{version}/ws-commons-util-1.0.2.jar
+
+rm -f org.python.pydev.debug_%{version}/xmlrpc-client-3.1.jar
+ln -sf %{_javadir}/xmlrpc3-client.jar \
+       org.python.pydev.debug_%{version}/xmlrpc-client-3.1.jar
+
+rm -f org.python.pydev.debug_%{version}/xmlrpc-common-3.1.jar
+ln -sf %{_javadir}/xmlrpc3-common.jar \
+       org.python.pydev.debug_%{version}/xmlrpc-common-3.1.jar
+
+rm -f org.python.pydev.debug_%{version}/xmlrpc-server-3.1.jar
+ln -sf %{_javadir}/xmlrpc3-server.jar \
+       org.python.pydev.debug_%{version}/xmlrpc-server-3.1.jar
+
+rm -rf org.python.pydev.jython_%{version}/jython.jar
+ln -sf %{_javadir}/jython.jar \
+       org.python.pydev.jython_%{version}/jython.jar
 popd
 
 # rename cgi.py's shebang from /usr/local/bin/python to /usr/bin/env python
-#sed -i 's/\/usr\/local\/bin\/python/\/usr\/bin\/env python/' ${RPM_BUILD_ROOT}%{_datadir}/eclipse/dropins/pydev/eclipse/plugins/org.python.pydev.jython_%{version}/Lib/cgi.py
+sed -i 's/\/usr\/local\/bin\/python/\/usr\/bin\/env python/' ${RPM_BUILD_ROOT}%{install_loc}/pydev/eclipse/plugins/org.python.pydev.jython_%{version}/Lib/cgi.py
 # convert .py$ files from mode 0644 to mode 0755
 chmod 0755 `find ${RPM_BUILD_ROOT} -name '*\.py' -perm 0644 | xargs`
 
@@ -174,12 +244,11 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files
 %defattr(-,root,root,-)
-%{_datadir}/eclipse/dropins/pydev
+%{install_loc}/pydev
 # no xmlrpc3 -> no mylyn on ppc64 due to:
 # https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239123
-%ifnarch ppc64
-%{_datadir}/eclipse/dropins/pydev-mylyn
-%endif
+
+%files mylyn
+%{install_loc}/pydev-mylyn
 
 %{gcj_files}
-
