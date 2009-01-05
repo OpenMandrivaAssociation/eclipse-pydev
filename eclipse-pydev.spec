@@ -75,7 +75,7 @@ Python development.
 Summary:  Pydev Mylyn Focused UI
 Requires: eclipse-mylyn
 Requires: %{name} = %{epoch}:%{version}-%{release}
-Group: Development/Tools
+Group: Development/Python
 
 %description mylyn
 Mylyn Task-Focused UI extensions for Pydev.
