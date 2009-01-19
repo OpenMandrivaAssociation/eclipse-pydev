@@ -6,7 +6,7 @@ Epoch: 1
 
 %define major     1
 %define minor     4
-%define maint     0
+%define maint     2
 
 Summary:          Eclipse Python development plug-in
 Name:             eclipse-pydev
