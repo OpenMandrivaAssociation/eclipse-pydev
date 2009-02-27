@@ -6,7 +6,9 @@ Epoch: 1
 
 %define major     1
 %define minor     4
-%define maint     2
+%define maint     4
+
+%define qualifier 2636
 
 Summary:          Eclipse Python development plug-in
 Name:             eclipse-pydev
@@ -15,7 +17,7 @@ Release:          %mkrel 0.0.1
 License:          Eclipse Public License
 URL:              http://pydev.sourceforge.net/
 Group:            Development/Python
-Source0:          http://downloads.sourceforge.net/pydev/org.python.pydev.feature-src-%{major}_%{minor}_%{maint}.zip
+Source0:          http://downloads.sourceforge.net/pydev/org.python.pydev.feature-%{major}.%{minor}.%{maint}.%{qualifier}-sources.zip
 Source1:          org.python.pydev.mylyn.feature-fetched-src-pydev_1_3_7.tar.bz2
 Source2:          fetch-pydev-mylyn.sh
 
@@ -153,11 +155,9 @@ rm -f plugins/org.python.pydev.refactoring/contrib/ch/hsr/ukistler/astgraph/jgra
 
 %build
 %{eclipse_base}/buildscripts/pdebuild \
-  -a "-DjavacSource=1.5  -DjavacTarget=1.5" \
   -f org.python.pydev.feature
 
 %{eclipse_base}/buildscripts/pdebuild \
-  -a "-DjavacSource=1.5  -DjavacTarget=1.5" \
   -d mylyn \
   -f org.python.pydev.mylyn.feature
 
@@ -165,7 +165,6 @@ rm -f plugins/org.python.pydev.refactoring/contrib/ch/hsr/ukistler/astgraph/jgra
 # https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=239123
 %ifnarch ppc64
 %{eclipse_base}/buildscripts/pdebuild \
-  -a "-DjavacSource=1.5  -DjavacTarget=1.5" \
   -d mylyn \
   -f org.python.pydev.mylyn.feature
 %endif
@@ -188,41 +187,41 @@ unzip -q -d ${installDir}-mylyn build/rpmBuild/org.python.pydev.mylyn.feature.zi
 
 # deal with linked deps
 pushd $installDir/eclipse/plugins
-rm -rf org.python.pydev.core_%{version}/commons-codec.jar
+rm -rf org.python.pydev.core_%{version}.%{qualifier}/commons-codec.jar
 ln -sf %{_javadir}/jakarta-commons-codec.jar \
-       org.python.pydev.core_%{version}/commons-codec.jar
+       org.python.pydev.core_%{version}.%{qualifier}/commons-codec.jar
 
-mkdir org.python.pydev.core_%{version}/lib
+mkdir org.python.pydev.core_%{version}.%{qualifier}/lib
 ln -sf %{_javadir}/junit.jar \
-       org.python.pydev.core_%{version}/lib/junit.jar
+       org.python.pydev.core_%{version}.%{qualifier}/lib/junit.jar
 
-rm -rf org.python.pydev.debug_%{version}/commons-logging-1.1.jar
+rm -rf org.python.pydev.debug_%{version}.%{qualifier}/commons-logging-1.1.jar
 ln -sf %{_javadir}/jakarta-commons-logging.jar \
-       org.python.pydev.debug_%{version}/commons-logging-1.1.jar
+       org.python.pydev.debug_%{version}.%{qualifier}/commons-logging-1.1.jar
 
-rm -rf org.python.pydev.debug_%{version}/ws-commons-util-1.0.2.jar
+rm -rf org.python.pydev.debug_%{version}.%{qualifier}/ws-commons-util-1.0.2.jar
 ln -sf %{_javadir}/ws-commons-util.jar \
-       org.python.pydev.debug_%{version}/ws-commons-util-1.0.2.jar
+       org.python.pydev.debug_%{version}.%{qualifier}/ws-commons-util-1.0.2.jar
 
-rm -f org.python.pydev.debug_%{version}/xmlrpc-client-3.1.jar
+rm -f org.python.pydev.debug_%{version}.%{qualifier}/xmlrpc-client-3.1.jar
 ln -sf %{_javadir}/xmlrpc3-client.jar \
-       org.python.pydev.debug_%{version}/xmlrpc-client-3.1.jar
+       org.python.pydev.debug_%{version}.%{qualifier}/xmlrpc-client-3.1.jar
 
-rm -f org.python.pydev.debug_%{version}/xmlrpc-common-3.1.jar
+rm -f org.python.pydev.debug_%{version}.%{qualifier}/xmlrpc-common-3.1.jar
 ln -sf %{_javadir}/xmlrpc3-common.jar \
-       org.python.pydev.debug_%{version}/xmlrpc-common-3.1.jar
+       org.python.pydev.debug_%{version}.%{qualifier}/xmlrpc-common-3.1.jar
 
-rm -f org.python.pydev.debug_%{version}/xmlrpc-server-3.1.jar
+rm -f org.python.pydev.debug_%{version}.%{qualifier}/xmlrpc-server-3.1.jar
 ln -sf %{_javadir}/xmlrpc3-server.jar \
-       org.python.pydev.debug_%{version}/xmlrpc-server-3.1.jar
+       org.python.pydev.debug_%{version}.%{qualifier}/xmlrpc-server-3.1.jar
 
-rm -rf org.python.pydev.jython_%{version}/jython.jar
+rm -rf org.python.pydev.jython_%{version}.%{qualifier}/jython.jar
 ln -sf %{_javadir}/jython.jar \
-       org.python.pydev.jython_%{version}/jython.jar
+       org.python.pydev.jython_%{version}.%{qualifier}/jython.jar
 popd
 
 # rename cgi.py's shebang from /usr/local/bin/python to /usr/bin/env python
-sed -i 's/\/usr\/local\/bin\/python/\/usr\/bin\/env python/' ${RPM_BUILD_ROOT}%{install_loc}/pydev/eclipse/plugins/org.python.pydev.jython_%{version}/Lib/cgi.py
+sed -i 's/\/usr\/local\/bin\/python/\/usr\/bin\/env python/' ${RPM_BUILD_ROOT}%{install_loc}/pydev/eclipse/plugins/org.python.pydev.jython_%{version}.%{qualifier}/Lib/cgi.py
 # convert .py$ files from mode 0644 to mode 0755
 chmod 0755 `find ${RPM_BUILD_ROOT} -name '*\.py' -perm 0644 | xargs`
 
