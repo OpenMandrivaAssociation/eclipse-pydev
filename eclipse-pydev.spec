@@ -13,7 +13,7 @@ Epoch: 1
 Summary:          Eclipse Python development plug-in
 Name:             eclipse-pydev
 Version:          %{major}.%{minor}.%{maint}
-Release:          %mkrel 0.0.1
+Release:          %mkrel 0.0.2
 License:          Eclipse Public License
 URL:              http://pydev.sourceforge.net/
 Group:            Development/Python
