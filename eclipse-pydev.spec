@@ -10,7 +10,7 @@
 Summary:          Eclipse Python development plug-in
 Name:             eclipse-pydev
 Version:          1.6.5
-Release:          1
+Release:          3
 Epoch:		  1
 License:          EPL
 URL:              http://pydev.org
