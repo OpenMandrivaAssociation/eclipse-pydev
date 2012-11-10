@@ -1,0 +1,11 @@
+--- plugins/org.python.pydev/PySrc/interpreterInfo.py.orig	2009-12-25 17:31:52.000000000 -0500
++++ plugins/org.python.pydev/PySrc/interpreterInfo.py	2010-06-30 10:16:07.719932063 -0400
+@@ -133,6 +133,4 @@
+         #and give some time to let it read things (just in case)
+         time.sleep(0.1)
+     except:
+-        pass
+-    
+-    raise RuntimeError('Ok, this is so that it shows the output (ugly hack for some platforms, so that it releases the output).')
++        pass
+\ No newline at end of file

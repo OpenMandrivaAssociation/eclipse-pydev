@@ -1,0 +1,13 @@
+--- features/org.python.pydev.feature/feature.xml.orig	2011-01-02 00:24:46.000000000 +0200
++++ features/org.python.pydev.feature/feature.xml	2011-01-04 09:50:27.888507945 +0200
+@@ -223,10 +223,5 @@ This Agreement is governed by the laws o
+          download-size="160"
+          install-size="160"
+          version="1.6.5.2011020317"/>
+-   <plugin
+-         id="org.python.pydev.red_core"
+-         download-size="160"
+-         install-size="160"
+-         version="1.6.5.2011020317"/>
+ 
+ </feature>

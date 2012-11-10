@@ -1,0 +1,11 @@
+--- plugins/com.python.pydev/src/com/python/pydev/ui/hierarchy/HierarchyNodeView.java.sav	2009-12-25 17:31:50.000000000 +0200
++++ plugins/com.python.pydev/src/com/python/pydev/ui/hierarchy/HierarchyNodeView.java	2010-03-24 22:45:40.923631461 +0200
+@@ -54,7 +54,7 @@ public class HierarchyNodeView {
+         this.model = model;
+         this.initialColor = initialColor;
+         Image classImg = PydevPlugin.getImageCache().get(UIConstants.CLASS_ICON);
+-        final PSWTImage img = new PSWTImage(canvas, classImg, false); //do not dispose it.
++        final PSWTImage img = new PSWTImage(canvas, classImg){ protected void disposeImage() {} }; //do not dispose it.
+         img.translate(0+x, 5+y);
+         Rectangle2D imgRect = img.getBounds().getBounds2D();
+         final PSWTText text = new PSWTText(model.name);

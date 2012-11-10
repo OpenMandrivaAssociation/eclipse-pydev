@@ -1,0 +1,12 @@
+--- plugins/com.python.pydev/META-INF/MANIFEST.MF.orig	2011-01-02 00:24:46.000000000 +0200
++++ plugins/com.python.pydev/META-INF/MANIFEST.MF	2011-01-04 09:46:21.687977556 +0200
+@@ -24,7 +24,8 @@ Require-Bundle: org.eclipse.ui,
+  org.eclipse.ui.console,
+  org.python.pydev.jython,
+  org.eclipse.search,
+- org.eclipse.ui.ide
++ org.eclipse.ui.ide,
++ org.piccolo2d.swt
+ Eclipse-LazyStart: true
+ Bundle-ClassPath: pydev.jar,
+  retroweaver-rt.jar
