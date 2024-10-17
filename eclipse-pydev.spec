@@ -13,7 +13,7 @@ Version:          1.6.5
 Release:          3
 Epoch:		  1
 License:          EPL
-URL:              http://pydev.org
+URL:              https://pydev.org
 Group:            Development/Java
 
 Source0:          http://downloads.sourceforge.net/project/pydev/pydev/Pydev%20%{version}/org.python.pydev-%{version}.%{qualifier}-sources.zip
